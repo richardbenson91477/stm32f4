@@ -1,0 +1,5 @@
+nnoremap <leader>me :wall<bar>make! -f makefile.f4emu<cr>
+nnoremap <leader>mt :wall<bar>make! -f makefile.f4emu test<cr>
+nnoremap <leader>ml :wall<bar>make! -f makefile.f4lib<cr>
+nnoremap <leader>mu :wall<bar>make! -f makefile.f4lib upload<cr>
+

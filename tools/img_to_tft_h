@@ -1,0 +1,14 @@
+#!/bin/mksh
+# requires imagemagick (convert)
+
+[ x"$2" == x"" ] &&\
+    echo "usage: $0 image_file data_name" &&\
+    exit
+
+BN=$(basename "$1" .png)
+
+convert "$1" "$BN.rgb" &&\
+    ../tools/to_565 "$BN.rgb" > "$BN.565" &&\
+    ../tools/uint16_h "$BN.565" "$2" > "$2.h"
+    rm -f "$BN.565" "$BN.rgb"
+

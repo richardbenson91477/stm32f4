@@ -1,0 +1,8 @@
+#DEBUG = 1
+TARGET = l2
+TARGET_OBJS = l2.o l2_rays.o l2_tiles.o l2_ents.o l2_misc.o blaze/blaze.o
+TARGET_HEADERS = l2.h l2_rays.h l2_tiles.h l2_ents.h l2_misc.h
+TARGET_FLAGS = -I.
+
+include f4emu/makefile.base
+

@@ -1,0 +1,40 @@
+DEBUG = 1
+#TARGET = game1
+#TARGET_OBJS = game1.o game1_lines.o
+#TARGET_HEADERS = game1.h game1_lines.h
+#TARGET_FLAGS = -I.
+
+F4EMU_OBJS = f4emu/f4emu.o
+F4EMU_HEADERS = f4emu/f4emu.h
+F4EMU_FLAGS = -If4emu -DF4EMU -DSERIAL_CON -DLCD_S=\"$(TARGET)\"
+
+OBJS = $(TARGET_OBJS) $(F4EMU_OBJS)
+LDLIBS += -lSDL2 -lSDL2_mixer -lSDL2_image
+
+MCU = -march=native
+
+CFLAGS = $(MCU) $(TARGET_FLAGS) $(F4EMU_FLAGS) --std=c11 -Wall -Werror=implicit-function-declaration -Wno-unused-result
+
+ifdef DEBUG
+    CFLAGS += -Og -g -gdwarf-2
+else
+    CFLAGS += -O2
+endif
+
+CXXFLAGS = $(CFLAGS) -std=c++17 -fno-rtti -fno-exceptions -fno-builtin -Wno-register -Wno-unused-result
+
+LDFLAGS = $(MCU)
+
+all: $(TARGET)
+
+$(TARGET_OBJS): $(TARGET_HEADERS) $(F4EMU_HEADERS) makefile
+$(F4EMU_OBJS): $(F4EMU_HEADERS) makefile
+
+$(TARGET): $(OBJS)
+
+test: $(TARGET)
+	./$(TARGET)
+
+clean:
+	rm -f $(OBJS) $(TARGET)
+

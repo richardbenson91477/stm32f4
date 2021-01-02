@@ -1,0 +1,70 @@
+#DEBUG = 1
+#TARGET = game1
+#TARGET_OBJS = game1.o game1_lines.o
+#TARGET_HEADERS = game1.h game1_lines.h
+#TARGET_FLAGS = -I.
+
+F4LIB_OBJS = f4lib/f4_inth.o f4lib/f4_misc.o f4lib/f4_IO.o f4lib/f4_LCD.o f4lib/f4_tch.o
+F4LIB_HEADERS = f4lib/f4_misc.h f4lib/f4_IO.h f4lib/f4_LCD.h f4lib/f4_tch.h
+F4LIB_FLAGS = -If4lib -DSERIAL_CON
+
+STDP_OBJS = f4lib/stdp/stm32f4xx_fsmc.o f4lib/stdp/stm32f4xx_gpio.o f4lib/stdp/stm32f4xx_rcc.o f4lib/stdp/stm32f4xx_tim.o f4lib/stdp/stm32f4xx_usart.o f4lib/stdp/misc.o f4lib/system_stm32f4xx.o f4lib/stdp/startup_stm32f40_41xxx.o 
+STDP_FLAGS = -If4lib/stdp
+STDP_LDSCRIPT = f4lib/stdp/stm32f407.ld 
+STDP_LDFLAGS=-specs=nano.specs -T $(STDP_LDSCRIPT)
+#STDP_LDFLAGS += -Wl,--gc-sections -Wl,--wrap,_free_r -Wl,--wrap,_realloc_r -Wl,--wrap,_memalign_r -Wl,--wrap,_calloc_r -Wl,--wrap,exit -Wl,--wrap,atexit -Wl,-n 
+
+OBJS = $(TARGET_OBJS) $(F4LIB_OBJS) $(STDP_OBJS)
+LDLIBS += -lm -lc -lgcc -lnosys
+
+MCU = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+
+CFLAGS = $(MCU) $(TARGET_FLAGS) $(F4LIB_FLAGS) $(STDP_FLAGS) -Wall -fdata-sections -ffunction-sections -Werror=implicit-function-declaration -Wno-unused-result
+
+ifdef DEBUG
+    CFLAGS += -Og -g -gdwarf-2
+else
+    CFLAGS += -O2
+endif
+
+CXXFLAGS = $(CFLAGS) -std=c++17 -fno-rtti -fno-exceptions -fno-builtin -Wno-register -Wno-unused-result
+
+LDFLAGS = $(STDP_LDFLAGS) $(MCU)
+
+CROSS_PREFIX = arm-none-eabi-
+CC = $(CROSS_PREFIX)gcc
+CXX = $(CROSS_PREFIX)g++
+CP = $(CROSS_PREFIX)objcopy
+AR = $(CROSS_PREFIX)ar
+SZ = $(CROSS_PREFIX)size
+
+%.o: %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+%.o: %.cpp
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+%.o: %.s
+	$(CC) -c $(CFLAGS) $< -o $@
+
+%.hex: %.elf
+	$(CP) -O ihex $< $@
+
+%.bin: %.elf
+	$(CP) -O binary -S $< $@
+
+all: $(TARGET).hex
+
+$(TARGET_OBJS): $(TARGET_HEADERS) $(F4LIB_HEADERS) makefile
+$(F4LIB_OBJS): $(F4LIB_HEADERS) makefile
+
+$(TARGET).elf: $(OBJS)
+	$(CC) $(OBJS) $(LDLIBS) $(LDFLAGS) -o $@
+	$(SZ) $@
+
+upload: $(TARGET).hex
+	st-flash --format ihex write $(TARGET).hex
+
+clean:
+	rm -f $(OBJS) $(TARGET).hex $(TARGET).elf $(TARGET).bin
+

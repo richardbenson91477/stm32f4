@@ -1,0 +1,8 @@
+#DEBUG = 1
+TARGET = LCD_test
+TARGET_OBJS = LCD_test.o
+TARGET_HEADERS =
+TARGET_FLAGS = -I.
+
+include f4emu/makefile.base
+
